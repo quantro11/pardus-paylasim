@@ -6,7 +6,7 @@ Manages P2P Mesh node activation, peer table, and multi-hop relay metrics.
 from dataclasses import dataclass
 from typing import Any
 
-from pardus_paylasim.discovery.mesh.mesh_network import MeshNode
+from pardus_paylasim.discovery.mesh.mesh_network import MeshNode, MeshPeer
 
 
 @dataclass(frozen=True)
@@ -16,6 +16,7 @@ class MeshPeerInfo:
     port: int
     hops: int = 1
     is_direct: bool = True
+    latency_ms: float | None = None
 
 
 class MeshViewHandler:
@@ -34,17 +35,29 @@ class MeshViewHandler:
             self.node = MeshNode(peer_id=peer_id, local_ip=local_ip, mesh_port=port)
         return self.node
 
-    def add_peer(self, ip: str, port: int) -> bool:
+    def add_peer(self, ip: str, port: int, peer_id: str | None = None) -> bool:
         if self.node is None:
             return False
-        return self.node.add_peer(ip, port)
+        pid = peer_id or f"{ip}:{port}"
+        self.node.add_peer(MeshPeer(id=pid, ip=ip, port=int(port)))
+        return True
 
     def get_peers(self) -> list[MeshPeerInfo]:
         if self.node is None:
             return []
         res = []
         for peer_id, addr in getattr(self.node, "peers", {}).items():
-            if isinstance(addr, tuple) and len(addr) >= 2:
+            if isinstance(addr, MeshPeer):
+                res.append(
+                    MeshPeerInfo(
+                        peer_id=addr.id,
+                        ip=addr.ip,
+                        port=addr.port,
+                        is_direct=addr.relayed_through is None,
+                        latency_ms=addr.latency_ms,
+                    )
+                )
+            elif isinstance(addr, tuple) and len(addr) >= 2:
                 res.append(MeshPeerInfo(peer_id=peer_id, ip=addr[0], port=addr[1]))
             elif isinstance(addr, str) and ":" in addr:
                 ip, port_s = addr.split(":", 1)
@@ -54,9 +67,12 @@ class MeshViewHandler:
     def get_stats(self) -> dict[str, int]:
         if self.node is None:
             return {"peers_count": 0, "active": 0}
+        is_running = bool(
+            getattr(self.node, "_running", False) or getattr(self.node, "running", False)
+        )
         return {
             "peers_count": len(getattr(self.node, "peers", {})),
-            "active": 1 if getattr(self.node, "running", False) else 0,
+            "active": 1 if is_running else 0,
         }
 
 

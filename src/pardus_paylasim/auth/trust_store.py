@@ -29,6 +29,17 @@ class TrustedDevice:
 
 
 class TrustStore:
+    _instance: "TrustStore | None" = None
+    _instance_lock = threading.Lock()
+
+    @classmethod
+    def get_instance(cls) -> "TrustStore":
+        """Uygulama genelinde paylaşılan tekil TrustStore örneğini döndürür."""
+        with cls._instance_lock:
+            if cls._instance is None:
+                cls._instance = cls()
+            return cls._instance
+
     def __init__(self, file_path: str | None = None):
         self._lock = threading.Lock()
         self._file_path = file_path or _STORE_FILE
@@ -127,6 +138,40 @@ class TrustStore:
     def get_all(self) -> list[TrustedDevice]:
         with self._lock:
             return list(self._devices.values())
+
+    def list_trusted(self) -> dict[str, dict]:
+        """Güvenilir cihazları parmak izi -> meta sözlüğü olarak döndürür."""
+        with self._lock:
+            return {
+                k: {
+                    "device_name": v.device_name,
+                    "added_at": v.added_at,
+                    "last_ip": v.last_ip,
+                }
+                for k, v in self._devices.items()
+            }
+
+    def add_trusted(self, fingerprint: str, name: str, ip: str = "") -> bool:
+        """Parmak izi 64-hex ise `record_pairing`, değilse doğrudan kayıt ekler."""
+        if self.record_pairing(fingerprint, name, ip or None):
+            return True
+        if not fingerprint:
+            return False
+        self.add_trusted_device(fingerprint.lower(), name or "?")
+        return True
+
+    def remove_trusted(self, fingerprint: str) -> bool:
+        key = (fingerprint or "").lower()
+        with self._lock:
+            if key in self._devices:
+                del self._devices[key]
+                self._save()
+                return True
+            if fingerprint in self._devices:
+                del self._devices[fingerprint]
+                self._save()
+                return True
+        return False
 
 
 def should_auto_accept(sender_ip: str | None, store: TrustStore,
