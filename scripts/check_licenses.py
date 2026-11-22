@@ -20,30 +20,64 @@ RUNTIME_PACKAGES = [
     "zeroconf",
 ]
 
-# GPL-3.0 ile uyumsuz lisans anahtar sözcükleri (ör. GPL-2.0-only, AGPL/SSPL/Proprietary).
-INCOMPATIBLE_MARKERS = (
-    "proprietary",
+# GPL-3.0 ile kesin uyumlu OSI lisans belirteçleri.
+COMPATIBLE_MARKERS = (
+    "mit",
+    "bsd",
+    "apache-2.0",
+    "apache software license",
+    "psf",
+    "python software foundation",
+    "hpnd",
+    "isc",
+    "unlicense",
+    "lgpl-2.1",
+    "lgpl-3",
+    "lesser general public license",
+    "gpl-3",
+    "mpl-2.0",
+)
+
+# GPL-3.0 ile uyumsuz lisans belirteçleri (yalnız uyumlu OSI lisansı yoksa reddedilir).
+HARD_INCOMPATIBLE_MARKERS = (
     "sspl",
     "gpl-2.0-only",
     "gplv2 only",
-    "wtfpl-incompatible",
 )
 
 
 def extract_license(dist: metadata.Distribution) -> str:
     meta = dist.metadata
     spdx = meta.get("License-Expression")
-    if spdx:
+    if spdx and spdx.strip():
         return spdx.strip()
-    classifiers = [
+    all_classifiers = [
         c.split("::")[-1].strip()
         for c in (meta.get_all("Classifier") or [])
         if c.startswith("License ::")
     ]
-    if classifiers:
-        return " / ".join(classifiers)
+    osi_classifiers = [
+        c.split("::")[-1].strip()
+        for c in (meta.get_all("Classifier") or [])
+        if c.startswith("License :: OSI Approved ::")
+    ]
+    if osi_classifiers:
+        return " / ".join(osi_classifiers)
     raw = (meta.get("License") or "").strip().splitlines()
-    return raw[0][:100] if raw else "UNKNOWN"
+    if raw and raw[0].strip():
+        return raw[0].strip()[:100]
+    if all_classifiers:
+        return " / ".join(all_classifiers)
+    return "UNKNOWN"
+
+
+def is_gpl3_compatible(license_text: str) -> bool:
+    low = license_text.lower()
+    if any(bad in low for bad in HARD_INCOMPATIBLE_MARKERS):
+        return False
+    if any(ok in low for ok in COMPATIBLE_MARKERS):
+        return True
+    return "proprietary" not in low
 
 
 def main() -> int:
@@ -58,8 +92,7 @@ def main() -> int:
             continue
         lic = extract_license(dist)
         print(f"{pkg:<18} {dist.version:<12} {lic}")
-        low = lic.lower()
-        if any(bad in low for bad in INCOMPATIBLE_MARKERS):
+        if not is_gpl3_compatible(lic):
             failures.append(f"{pkg}: GPL-3.0 ile uyumsuz lisans ({lic})")
 
     if failures:
