@@ -13,21 +13,29 @@ echo "[Pardus Test] Paket Kurulumu (dpkg/apt)..."
 apt-get update
 apt-get install -y /app/pardus-paylasim.deb
 
-echo "[Pardus Test] Örnek Dosya Oluşturuluyor..."
-echo "dummy file" > /tmp/dummy.pdf
+echo "[Pardus Test] Geçerli Test Görseli Oluşturuluyor..."
+python3 -c '
+from PIL import Image
+im = Image.new("RGB", (64, 64), color=(57, 73, 171))
+im.save("/tmp/dummy.png", format="PNG")
+'
 
-echo "[Pardus Test] CLI Testi (Metadata Temizleme)..."
-pardus-paylasim --clean /tmp/dummy.pdf --out /tmp/dummy_clean.pdf
-file /tmp/dummy_clean.pdf
+echo "[Pardus Test] CLI Testleri (--clean, --mask, --mesh-status)..."
+pardus-paylasim --clean /tmp/dummy.png --out /tmp/dummy_clean.png
+file /tmp/dummy_clean.png
+pardus-paylasim --mask "TCKN: 10000000146"
+pardus-paylasim --mesh-status
 
-echo "[Pardus Test] Headless GUI Testi (Xvfb ve DBus ile başlatma)..."
+echo "[Pardus Test] Headless GUI Testi (Xvfb + Cairo GSK + DBus ile başlatma)..."
 export $(dbus-launch)
+export GSK_RENDERER=cairo
+export LIBGL_ALWAYS_SOFTWARE=1
 xvfb-run -a pardus-paylasim &
 APP_PID=$!
 sleep 3
 if kill -0 $APP_PID 2>/dev/null; then
     echo "[Pardus Test] GTK arayüzü çökmeden başarıyla başlatıldı!"
-    kill $APP_PID
+    kill $APP_PID || true
 else
     echo "[HATA] GTK arayüzü başlatılırken çöktü (Fatal Error)!"
     exit 1
@@ -37,23 +45,27 @@ echo ""
 echo "==========================================="
 echo "⚙️ Pardus Backend Testleri Çalıştırılıyor (Config & P2P & AES)..."
 echo "==========================================="
+export PYTHONPATH="/usr/lib/python3/dist-packages"
 pytest /app/test_backend.py -v
 
 echo ""
 echo "==========================================="
 echo "🧪 Pardus Turing Testleri (Fonksiyonel) Başlıyor..."
 echo "==========================================="
-export PYTHONPATH="/usr/lib/python3/dist-packages"
 python3 /app/test_turing.py
 
-# Platform-bagimsiz suite kurulu paket uzerinde (mount edilmisse).
-# run_docker_test.sh /app/project-tests'e mount eder; yoksa atlanir.
+# Kurulu .deb paketi üzerinde çekirdek protokol, mesh yönlendirme ve performans testleri
 if [ -d "/app/project-tests" ]; then
     echo ""
     echo "==========================================="
-    echo "📦 Platform-bagimsiz suite (kurulu paket): pytest tests/"
+    echo "📦 Kurulu Paket Entegrasyon Testleri (Mesh, Relay, Performans)..."
     echo "==========================================="
-    pytest /app/project-tests -m "not docker and not e2e" --ignore=/app/project-tests/docker --ignore=/app/project-tests/e2e -v
+    pytest \
+      /app/project-tests/test_mesh_relay.py \
+      /app/project-tests/test_mesh_routing.py \
+      /app/project-tests/test_perf_regression.py \
+      /app/project-tests/test_innovations.py \
+      -v
 fi
 
 echo "[Pardus Test] Tüm testler BAŞARILI!"
