@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     python3-zeroconf \
     python3-bleak \
     xvfb \
+    xauth \
     dbus-x11 \
     lintian \
     file \

@@ -108,7 +108,7 @@ jobs:
           bash tests/run_docker_test.sh 2>&1 | tee docker_test.log
           rc=${PIPESTATUS[0]}
           if [ "$rc" -ne 0 ]; then
-            tail -n 40 docker_test.log | while IFS= read -r line; do
+            tail -n 10 docker_test.log | while IFS= read -r line; do
               echo "::error file=docker_test.log::$line"
             done
             exit "$rc"

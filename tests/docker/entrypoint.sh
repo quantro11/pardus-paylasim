@@ -30,7 +30,7 @@ echo "[Pardus Test] Headless GUI Testi (Xvfb + Cairo GSK + DBus ile başlatma)..
 export $(dbus-launch)
 export GSK_RENDERER=cairo
 export LIBGL_ALWAYS_SOFTWARE=1
-xvfb-run -a pardus-paylasim &
+xvfb-run -a pardus-paylasim >/tmp/gui.log 2>&1 &
 APP_PID=$!
 sleep 3
 if kill -0 $APP_PID 2>/dev/null; then
@@ -38,6 +38,7 @@ if kill -0 $APP_PID 2>/dev/null; then
     kill $APP_PID || true
 else
     echo "[HATA] GTK arayüzü başlatılırken çöktü (Fatal Error)!"
+    tail -n 20 /tmp/gui.log || true
     exit 1
 fi
 
