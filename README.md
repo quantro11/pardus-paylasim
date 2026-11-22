@@ -52,7 +52,7 @@
 ### Debian/Pardus (Önerilen)
 
 ```bash
-sudo dpkg -i pardus-paylasim_1.1.0_all.deb
+sudo dpkg -i pardus-paylasim_1.2.0_all.deb
 sudo apt-get install -f
 ```
 
@@ -271,4 +271,4 @@ GPL-3.0 License — Detaylı bilgi için [LICENSE](LICENSE) dosyasına bakın.
 
 ---
 
-**Lennebraha38 <farukhilmi12345@gmail.com>** | Pardus Güvenli Paylaşım
+**Faruk Hilmi Akpınar (`quantro11`) <farukhilmi12345@gmail.com>** | Pardus Güvenli Paylaşım

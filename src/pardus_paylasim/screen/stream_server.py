@@ -281,7 +281,7 @@ class MJPEGHandler(http.server.BaseHTTPRequestHandler):
                 "resolution": self.server_instance.capture_resolution,
                 "status": "streaming" if self.server_instance.is_streaming else "stopped",
                 "port": self.server_instance.port,
-                "version": "1.1.0",
+                "version": "1.2.0",
                 "capture_error": self.server_instance.capture_error,
                 "capture_backend": self.server_instance.capture_backend,
                 # TLS durumu + parmak izi: istemci akış öncesi pinler (TOFU).

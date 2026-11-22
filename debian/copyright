@@ -1,16 +1,28 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pardus-paylasim
-Upstream-Contact: Lennebraha38 <farukhilmi12345@gmail.com>
-Source: https://github.com/Lennebraha38/pardus-paylasim
+Upstream-Contact: Faruk Hilmi Akpınar (quantro11) <farukhilmi12345@gmail.com>
+Source: https://github.com/quantro11/pardus-paylasim
 
 Files: *
-Copyright: 2024-2026 Lennebraha38 <farukhilmi12345@gmail.com>
+Copyright: 2024-2026 Faruk Hilmi Akpınar (quantro11) <farukhilmi12345@gmail.com>
 License: GPL-3.0-only
+
+Comment:
+ Tüm çalışma zamanı bağımlılıkları (cryptography: Apache-2.0/BSD-3-Clause,
+ PyGObject: LGPL-2.1+, zeroconf: LGPL-2.1, websockets: BSD-3-Clause,
+ Pillow: HPND, defusedxml: PSF-2.0, filelock: Unlicense, qrcode: BSD-3-Clause,
+ pyperclip: BSD-3-Clause) dinamik olarak içe aktarılır ve GPL-3.0 ile tam
+ uyumludur. Otomatik CI doğrulaması için bkz. scripts/check_licenses.py.
 
 License: GPL-3.0-only
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, version 3.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
  .
  On Debian/Pardus systems, the full text of the GNU General Public License
  version 3 can be found in `/usr/share/common-licenses/GPL-3`.

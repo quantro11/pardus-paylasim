@@ -2,7 +2,7 @@
 
 > Yöntem: AST/regex tabanlı statik tarama + Ruff Bandit (S) analizi.
 > Tarih: 2026-11-04 · Sürüm: 1.1.0 · Kapsam: `src/` ve `tests/` altındaki tüm Python dosyaları.
-> Maintainer: Lennebraha38 <farukhilmi12345@gmail.com>
+> Maintainer: quantro11 <farukhilmi12345@gmail.com>
 
 ## Tarama Sonuçları
 

@@ -53,7 +53,7 @@ if [ -d "/app/project-tests" ]; then
     echo "==========================================="
     echo "📦 Platform-bagimsiz suite (kurulu paket): pytest tests/"
     echo "==========================================="
-    pytest /app/project-tests -v
+    pytest /app/project-tests -m "not docker and not e2e" --ignore=/app/project-tests/docker --ignore=/app/project-tests/e2e -v
 fi
 
 echo "[Pardus Test] Tüm testler BAŞARILI!"

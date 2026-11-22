@@ -36,7 +36,7 @@ echo DEBIAN-READY"
 echo "== 4/5 Repo =="
 proot-distro login debian -- bash -c "
 if [ ! -d ~/pardus-paylasim ]; then
-    git clone https://github.com/Lennebraha38/pardus-paylasim.git ~/pardus-paylasim
+    git clone https://github.com/quantro11/pardus-paylasim.git ~/pardus-paylasim
 else
     cd ~/pardus-paylasim && git pull --ff-only || true
 fi"

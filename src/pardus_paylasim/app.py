@@ -88,10 +88,15 @@ class PardusPaylasimApp:
                 local_ip=_local_ip(),
             )
             node.start()
+            routing = node.get_routing_table()
             print(_("Mesh ağı başlatıldı."))
             print(f"  Peer ID: {node.peer_id}")
             print(f"  Port: {node.mesh_port}")
             print(f"  Bağlı eşler: {len(node.peers)}")
+            print("  Yönlendirme: en düşük gecikmeli otomatik relay")
+            for entry in routing:
+                lat = f"{entry['latency_ms']:.1f} ms" if entry["latency_ms"] is not None else "ölçülmedi"
+                print(f"    - {entry['peer_id']} ({entry['ip']}:{entry['port']}) · {lat}")
             node.stop()
             return 0
 

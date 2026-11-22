@@ -22,6 +22,11 @@ RUN apt-get update && apt-get install -y \
     file \
     python3-cryptography \
     python3-qrcode \
+    python3-filelock \
+    python3-defusedxml \
+    python3-websockets \
+    python3-pil \
+    python3-pyperclip \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

@@ -3,15 +3,17 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   # -------------------------------------------------------------------------
-  # Job 1: Lint + platform-bagimsiz unit testler (GTK gerektirmez)
+  # Job 1: Lint + lisans denetimi + platform-bagimsiz unit testler
   # Matrix: Python 3.10 / 3.11 / 3.12 — Ubuntu runner.
   # -------------------------------------------------------------------------
   lint-and-test:
@@ -37,10 +39,25 @@ jobs:
           pip install ruff
 
       - name: Ruff lint
-        run: ruff check src tests
+        run: ruff check src tests scripts/check_licenses.py
+
+      - name: License compliance gate (GPL-3.0)
+        run: python3 scripts/check_licenses.py
 
       - name: Run platform-independent tests
-        run: pytest tests/ -m "not docker and not e2e" -v
+        run: |
+          set +e
+          pytest tests/ -m "not docker and not e2e" -v --tb=short 2>&1 | tee pytest.log
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            grep -E "^(FAILED|ERROR) " pytest.log | head -30 | while IFS= read -r line; do
+              echo "::error file=pytest.log::$line"
+            done
+            tail -n 35 pytest.log | while IFS= read -r line; do
+              echo "::error file=pytest.log::$line"
+            done
+            exit "$rc"
+          fi
 
   windows-compatibility:
     name: Windows compatibility
@@ -70,7 +87,7 @@ jobs:
         run: xvfb-run -a /usr/bin/python3 -m pytest tests/test_notifications.py tests/test_qr_pairing.py -v
 
   # -------------------------------------------------------------------------
-  # Job 2: Debian paket + entegrasyon (docker, Pardus base image)
+  # Job 2: Debian paket (.deb) + Pardus 23 Docker entegrasyon + Release
   # -------------------------------------------------------------------------
   debian-integration:
     name: Debian build & integration
@@ -85,7 +102,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Build .deb + docker integration
+      - name: Build .deb + Pardus 23 docker integration
         run: bash tests/run_docker_test.sh
 
       - name: Upload Debian Package
@@ -93,5 +110,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pardus-paylasim-deb
-          path: pardus-paylasim_*.deb
+          path: |
+            pardus-paylasim*.deb
+            pardus-paylasim*.deb.sha256
           if-no-files-found: error
+
+      - name: Create GitHub Release (on v* tags)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pardus-paylasim_*_all.deb
+            pardus-paylasim_*_all.deb.sha256
+            pardus-paylasim.deb
+            pardus-paylasim.deb.sha256
+          generate_release_notes: true

@@ -193,7 +193,7 @@ def build_po() -> str:
         'msgid ""',
         'msgstr ""',
         '"Project-Id-Version: pardus-paylasim 1.1.0\\n"',
-        '"Report-Msgid-Bugs-To: https://github.com/Lennebraha38/pardus-paylasim/issues\\n"',
+        '"Report-Msgid-Bugs-To: https://github.com/quantro11/pardus-paylasim/issues\\n"',
         '"POT-Creation-Date: 2026-11-04 00:00+0300\\n"',
         '"PO-Revision-Date: 2026-11-04 00:00+0300\\n"',
         '"Language: en\\n"',

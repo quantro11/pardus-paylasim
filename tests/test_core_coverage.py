@@ -418,7 +418,9 @@ class TestReportBuilder(unittest.TestCase):
 
     def test_to_json(self):
         data = json.loads(ReportBuilder.to_json(self._results()))
-        self.assertEqual(data["version"], "1.1.0")
+        from pardus_paylasim import __version__
+
+        self.assertEqual(data["version"], __version__)
         self.assertEqual(data["total_files"], 2)
         self.assertEqual(data["files"][0]["risks"][0]["key"], "GPS Latitude")
         self.assertFalse(data["files"][1]["success"])

@@ -15,13 +15,13 @@
 - [x] Bütünlük doğrulamalı normal mod (SHA-256, 0x04 modu)
 - [x] Hız/ETA göstergesi (ilerleme çubuğuna bağlı)
 
-## v1.1 — Kalan (hedef: +1 ay)
-- [ ] Mesh otomatik yol seçimi (en düşük gecikmeli relay)
-- [ ] `pip-licenses` CI kapısı + `debian/copyright` tamamlama
-- [ ] pytest-benchmark ile regresyon takibi (CI'da eşik)
-- [ ] Kullanıcı anketi sonuçlarının ürüne işlenmesi
+## v1.2 — Tamamlananlar (2026-11)
+- [x] Mesh otomatik yol seçimi (en düşük gecikmeli relay + `FRAG_PING`/`FRAG_PONG` RTT + EWMA)
+- [x] Otomatik GPL-3.0 lisans uyumluluk CI kapısı (`scripts/check_licenses.py`) + DEP-5 `debian/copyright`
+- [x] Performans regresyon CI kapısı (`tests/test_perf_regression.py`)
+- [x] Python 3.10/3.11/3.12 + Windows + GTK + Pardus 23 Docker `.deb` tam CI & Release hattı
 
-## v1.2 — Birlikte Çalışabilirlik (hedef: +3 ay)
+## v1.3 — Birlikte Çalışabilirlik (Gelecek Hedefler)
 
 - [ ] LocalSend protokolü ile dosya alışverişi
 - [ ] KDE Connect bildirim köprüsü

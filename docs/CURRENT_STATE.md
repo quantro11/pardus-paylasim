@@ -3,8 +3,8 @@
 **Durum**: `RELEASE_READY` (v1.1.0 TEKNOFEST Pardus Geliştirme Kategorisi)
 **Versiyon**: 1.1.0
 **Tarih**: 2026-11-04
-**Maintainer / Geliştirici**: Lennebraha38 <farukhilmi12345@gmail.com>
-**Açık Kaynak Kod Deposu**: https://github.com/Lennebraha38/pardus-paylasim
+**Maintainer / Geliştirici**: quantro11 <farukhilmi12345@gmail.com>
+**Açık Kaynak Kod Deposu**: https://github.com/quantro11/pardus-paylasim
 
 ## Kod ve Test Durumu
 - Branch: `main`

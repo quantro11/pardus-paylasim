@@ -17,7 +17,7 @@ class ReportBuilder:
     def to_json(results: list[CleaningResult]) -> str:
         data = {
             "app": "Pardus Güvenli Paylaşım",
-            "version": "1.1.0",
+            "version": "1.2.0",
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "total_files": len(results),
             "files": [

@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-LABEL maintainer="Lennebraha38 <farukhilmi12345@gmail.com>"
+LABEL maintainer="Faruk Hilmi Akpınar (quantro11) <farukhilmi12345@gmail.com>"
 LABEL description="Pardus Güvenli Paylaşım - Container"
 
 # System dependencies (GUI/GTK ve ekran yakalama araçları)

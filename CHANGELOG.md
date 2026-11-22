@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-11-22
+
+### Added
+- **Mesh Otomatik Yol Seçimi (En Düşük Gecikmeli Relay):** `MeshNode` artık `FRAG_PING`/`FRAG_PONG` RTT ölçümü, EWMA gecikme takibi, hata sayacı ve `select_best_relays()` / `get_routing_table()` ile en düşük gecikmeli sağlıklı ara düğümü otomatik seçer (`tests/test_mesh_routing.py`).
+- **Otomatik GPL-3.0 Lisans Uyumluluk Kapısı:** `scripts/check_licenses.py` CI hattında tüm çalışma zamanı bağımlılıklarını doğrular; `debian/copyright` DEP-5 standardında tamamlandı.
+- **CI Performans Regresyon Kapısı:** `tests/test_perf_regression.py` maskeleme, 64KB Mesh pack/unpack+HMAC ve SQLite kuyruk gecikmelerini her commit'te eşik kontrolünden geçirir.
+- **Otomatik GitHub Release `.deb` Dağıtımı:** `v*` etiketlerinde doğrulanmış `pardus-paylasim_1.2.0_all.deb` ve `.sha256` özetleri otomatik yayınlanır.
+
+### Fixed
+- `tests/test_screen_protocol.py` içindeki eksik `import unittest.mock` (Python 3.10/3.11 CI hatası) düzeltildi.
+- `debian/control` ve `build_deb.py` bağımlılık listesine eksik `python3-filelock` eklendi; Docker entegrasyon betiği (`tests/docker/entrypoint.sh`) iç içe docker/e2e testlerini dışlayacak şekilde düzeltildi.
+- Tüm depo, paket, AppStream ve dokümantasyon meta verileri `quantro11/pardus-paylasim` olarak güncellendi.
+
 ## [1.1.0] - 2026-11-04
 
 ### Fixed
@@ -107,5 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker integration tests
 - Debian package build system
 
-[Unreleased]: https://github.com/Lennebraha38/pardus-paylasim/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/Lennebraha38/pardus-paylasim/releases/tag/v1.0.0
+[Unreleased]: https://github.com/quantro11/pardus-paylasim/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/quantro11/pardus-paylasim/releases/tag/v1.2.0
+[1.1.0]: https://github.com/quantro11/pardus-paylasim/releases/tag/v1.1.0
+[1.0.0]: https://github.com/quantro11/pardus-paylasim/releases/tag/v1.0.0

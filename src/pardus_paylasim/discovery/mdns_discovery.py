@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # durumuna geçilir. Geçmişte fallback prod'a sahte 192.168.1.101 sızdırıyordu.
 SIMULATE_ENV = "PARDUS_MDNS_SIMULATE"
 
-SERVICE_VERSION = "1.1.0"
+SERVICE_VERSION = "1.2.0"
 
 # Servis portları (TXT kayıtlarında yayınlanır; keşfeden taraf okur).
 # Ekran = MJPEG HTTP(S); dosya = transfer; pano = clipboard_sync.

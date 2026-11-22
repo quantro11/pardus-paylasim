@@ -8,20 +8,26 @@
   <description>
     <p>
       Pardus Güvenli Paylaşım, yerel ağınızdaki diğer Pardus cihazlarını mDNS ve Bluetooth LE
-      kullanarak anında bulur. Ekranınızı şifreli bir şekilde paylaşabilir, dosyalarınızı 
+      kullanarak anında bulur. Ekranınızı şifreli bir şekilde paylaşabilir, dosyalarınızı
       meta verilerinden (konum, yazar vb.) arındırarak güvenle aktarabilirsiniz.
     </p>
   </description>
   <launchable type="desktop-id">tr.org.pardus.paylasim.desktop</launchable>
   <icon type="stock">tr.org.pardus.paylasim</icon>
-  <developer_name>Lennebraha38</developer_name>
+  <developer_name>Faruk Hilmi Akpınar (quantro11)</developer_name>
   <developer id="tr.org.pardus">
-    <name>Lennebraha38</name>
+    <name>Faruk Hilmi Akpınar (quantro11)</name>
   </developer>
-  <url type="homepage">https://github.com/Lennebraha38/pardus-paylasim</url>
-  <url type="bugtracker">https://github.com/Lennebraha38/pardus-paylasim/issues</url>
+  <url type="homepage">https://github.com/quantro11/pardus-paylasim</url>
+  <url type="bugtracker">https://github.com/quantro11/pardus-paylasim/issues</url>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.2.0" date="2026-11-22">
+      <description>
+        <p>En düşük gecikmeli otomatik Mesh relay yönlendirmesi, otomatik GPL-3.0 lisans
+        uyumluluk kapısı, performans regresyon testleri ve otomatik .deb dağıtımı.</p>
+      </description>
+    </release>
     <release version="1.1.0" date="2026-11-04">
       <description>
         <p>Kalite ve güvenlik sürümü: ruff/lint temizliği, gettext EN kataloğu,

@@ -1,3 +1,12 @@
+pardus-paylasim (1.2.0) stable; urgency=medium
+
+  * Release 1.2.0: Mesh en düşük gecikmeli otomatik relay yönlendirmesi (RTT/EWMA).
+  * Otomatik GPL-3.0 lisans uyumluluk CI kapısı ve DEP-5 debian/copyright.
+  * CI performans regresyon testleri ve otomatik GitHub Release .deb dağıtımı.
+  * Eksik python3-filelock bağımlılığı ve çapraz sürüm test düzeltmeleri.
+
+ -- Faruk Hilmi Akpınar (quantro11) <farukhilmi12345@gmail.com>  Sun, 22 Nov 2026 23:30:00 +0300
+
 pardus-paylasim (1.1.0) stable; urgency=medium
 
   * Release 1.1.0: TEKNOFEST Pardus Geliştirme Kategorisi sürümü.
@@ -5,4 +14,4 @@ pardus-paylasim (1.1.0) stable; urgency=medium
   * Uçtan uca TLS parmak izi doğrulama ve birleşik güven deposu.
   * Web-viewer CSP uyumluluğu ve RFC 5987 dosya aktarımı.
 
- -- Lennebraha38 <farukhilmi12345@gmail.com>  Wed, 04 Nov 2026 12:00:00 +0300
+ -- Faruk Hilmi Akpınar (quantro11) <farukhilmi12345@gmail.com>  Wed, 04 Nov 2026 12:00:00 +0300

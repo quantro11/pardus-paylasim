@@ -40,6 +40,8 @@ FRAG_COMPLETE = 0x05
 FRAG_RELAY = 0x06
 FRAG_PEER_LIST = 0x07
 FRAG_CANCEL = 0x08
+FRAG_PING = 0x09
+FRAG_PONG = 0x0A
 AUTH_TAG_LEN = 32
 
 
@@ -69,6 +71,8 @@ class MeshPeer:
     last_seen: float = field(default_factory=time.time)
     capabilities: set[str] = field(default_factory=set)
     relayed_through: str | None = None
+    latency_ms: float | None = None
+    failure_count: int = 0
 
 
 @dataclass
@@ -279,11 +283,117 @@ class MeshNode:
 
     def add_peer(self, peer: MeshPeer):
         with self._lock:
+            existing = self.peers.get(peer.id)
+            if existing is not None and peer.latency_ms is None:
+                peer.latency_ms = existing.latency_ms
             self.peers[peer.id] = peer
 
     def remove_peer(self, pid: str):
         with self._lock:
             self.peers.pop(pid, None)
+
+    def _record_peer_success(self, peer_id: str, rtt_ms: float) -> None:
+        """Başarılı iletişimde EWMA gecikme güncelle ve hata sayacını sıfırla."""
+        with self._lock:
+            peer = self.peers.get(peer_id)
+            if peer is None:
+                return
+            peer.is_online = True
+            peer.last_seen = time.time()
+            peer.failure_count = 0
+            if peer.latency_ms is None:
+                peer.latency_ms = rtt_ms
+            else:
+                peer.latency_ms = 0.6 * peer.latency_ms + 0.4 * rtt_ms
+
+    def _record_peer_failure(self, peer_id: str) -> None:
+        with self._lock:
+            peer = self.peers.get(peer_id)
+            if peer is None:
+                return
+            peer.failure_count += 1
+
+    def select_best_relays(self, exclude_ids: set[str] | None = None) -> list[MeshPeer]:
+        """Çevrimiçi komşuları en düşük hata ve en düşük gecikmeye göre sıralar.
+
+        Gecikmesi henüz ölçülmeyen eşler, ölçülmüş sağlıklı eşlerden sonra
+        (ancak hatalı eşlerden önce) denenir.
+        """
+        excluded = exclude_ids or set()
+        with self._lock:
+            candidates = [
+                p for p in self.peers.values()
+                if p.is_online and p.id not in excluded and p.id != self.peer_id
+            ]
+        candidates.sort(
+            key=lambda p: (
+                p.failure_count,
+                p.latency_ms if p.latency_ms is not None else float("inf"),
+                -p.last_seen,
+            )
+        )
+        return candidates
+
+    def measure_peer_latency(self, peer_id: str, timeout: float = 1.5) -> float | None:
+        """Eşe `FRAG_PING` gönderip gerçek RTT gecikmesini (ms) ölçer."""
+        with self._lock:
+            peer = self.peers.get(peer_id)
+        if peer is None:
+            return None
+        ping_pkt = self.protocol.pack_fragment(
+            FRAG_PING, "ping", 0, 1, b"", self.peer_id, 0, "",
+            auth_key=self.auth_key,
+        )
+        t0 = time.perf_counter()
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(timeout)
+                s.connect((peer.ip, peer.port))
+                s.sendall(struct.pack("!I", len(ping_pkt)))
+                s.sendall(ping_pkt)
+                sz_raw = net_util.recv_exact(s, 4)
+                if not sz_raw:
+                    self._record_peer_failure(peer_id)
+                    return None
+                sz = struct.unpack("!I", sz_raw)[0]
+                if sz > 1024 * 1024:
+                    self._record_peer_failure(peer_id)
+                    return None
+                resp_raw = net_util.recv_exact(s, sz)
+                if not resp_raw:
+                    self._record_peer_failure(peer_id)
+                    return None
+                pong = self.protocol.unpack_fragment(resp_raw, auth_key=self.auth_key)
+                if not pong or pong["type"] != FRAG_PONG:
+                    self._record_peer_failure(peer_id)
+                    return None
+            rtt_ms = (time.perf_counter() - t0) * 1000.0
+            self._record_peer_success(peer_id, rtt_ms)
+            return rtt_ms
+        except OSError:
+            self._record_peer_failure(peer_id)
+            return None
+
+    def probe_all_peers(self, timeout: float = 1.5) -> dict[str, float | None]:
+        """Bilinen tüm komşuların gecikmesini ölç ve yönlendirme tablosunu güncelle."""
+        with self._lock:
+            peer_ids = list(self.peers.keys())
+        return {pid: self.measure_peer_latency(pid, timeout=timeout) for pid in peer_ids}
+
+    def get_routing_table(self) -> list[dict]:
+        """Öncelik sırasına göre (en düşük gecikmeli önce) yönlendirme tablosu."""
+        ordered = self.select_best_relays()
+        return [
+            {
+                "peer_id": p.id,
+                "ip": p.ip,
+                "port": p.port,
+                "latency_ms": round(p.latency_ms, 3) if p.latency_ms is not None else None,
+                "failure_count": p.failure_count,
+                "is_online": p.is_online,
+            }
+            for p in ordered
+        ]
 
     def offer_file_mesh(
         self, transfer_id: str, file_name: str,
@@ -324,23 +434,28 @@ class MeshNode:
         )
         with self._lock:
             peer = self.peers.get(target)
-            relays = [
-                p for p in self.peers.values()
-                if p.is_online and p.id != target
-            ]
         delivered = False
         if peer is not None:
+            t0 = time.perf_counter()
             delivered = self._send_raw(peer.ip, peer.port, packed)
+            if delivered:
+                self._record_peer_success(peer.id, (time.perf_counter() - t0) * 1000.0)
+            else:
+                self._record_peer_failure(peer.id)
         if delivered or hop >= MAX_RELAY_HOPS:
             return
-        # Doğrudan ulaşılamadı: parçayı komşu bir düğüm üzerinden ile.
+        # Doğrudan ulaşılamadı: en düşük gecikmeli sağlıklı ara düğüm üzerinden ilet.
+        relays = self.select_best_relays(exclude_ids={target})
         relay_payload = self.protocol.pack_fragment(
             FRAG_DATA, tid, idx, total, data, self.peer_id, hop + 1, chash,
             auth_key=self.auth_key,
         )
         for relay in relays:
+            t0 = time.perf_counter()
             if self._send_raw(relay.ip, relay.port, relay_payload):
+                self._record_peer_success(relay.id, (time.perf_counter() - t0) * 1000.0)
                 return
+            self._record_peer_failure(relay.id)
 
     def _send_raw(self, ip: str, port: int, data: bytes) -> bool:
         # Kısa retry: anlık takılmalar tolere edilir, ölü eş hızlı geçilir.
@@ -389,6 +504,14 @@ class MeshNode:
                 return
             frag = self.protocol.unpack_fragment(raw, auth_key=self.auth_key)
             if frag:
+                if frag["type"] == FRAG_PING:
+                    pong = self.protocol.pack_fragment(
+                        FRAG_PONG, frag["transfer_id"], 0, 1, b"",
+                        self.peer_id, 0, "", auth_key=self.auth_key,
+                    )
+                    conn.sendall(struct.pack("!I", len(pong)))
+                    conn.sendall(pong)
+                    return
                 self._process(frag, addr[0])
             elif self.auth_key is None:
                 try:
@@ -432,10 +555,7 @@ class MeshNode:
             if len(self._relay_seen) > 4096:
                 self._relay_seen.clear()
             self._relay_seen.add(key)
-            targets = [
-                p for p in self.peers.values()
-                if p.is_online and p.id != frag["source_peer_id"]
-            ]
+        targets = self.select_best_relays(exclude_ids={frag["source_peer_id"]})
         relay_payload = self.protocol.pack_fragment(
             frag["type"],
             frag["transfer_id"],
@@ -448,7 +568,11 @@ class MeshNode:
             auth_key=self.auth_key,
         )
         for peer in targets:
-            self._send_raw(peer.ip, peer.port, relay_payload)
+            t0 = time.perf_counter()
+            if self._send_raw(peer.ip, peer.port, relay_payload):
+                self._record_peer_success(peer.id, (time.perf_counter() - t0) * 1000.0)
+            else:
+                self._record_peer_failure(peer.id)
 
     def _handle_data(self, frag: dict, source_ip: str | None = None):
         tid = frag["transfer_id"]

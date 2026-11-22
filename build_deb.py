@@ -25,7 +25,7 @@ def generate_receipt(filepath):
     print(f"[*] SHA256 Doğrulama Özeti (Receipt) Oluşturuldu: {receipt_path}")
 
 APP_NAME = "pardus-paylasim"
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 BUILD_DIR = f"build/{APP_NAME}_standalone"
 SINGLE_DEB_NAME = "pardus-paylasim.deb"
 
@@ -78,10 +78,10 @@ def build_all_in_one_deb():
     control_content = f"""Package: {APP_NAME}
 Version: {VERSION}
 Architecture: all
-Maintainer: Lennebraha38 <farukhilmi12345@gmail.com>
-Depends: python3 (>= 3.10), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0, gir1.2-adw-1, python3-cryptography, python3-zeroconf, python3-websockets, python3-pil, python3-pyperclip, python3-defusedxml
+Maintainer: Faruk Hilmi Akpınar (quantro11) <farukhilmi12345@gmail.com>
+Depends: python3 (>= 3.10), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0, gir1.2-adw-1, python3-cryptography, python3-zeroconf, python3-websockets, python3-pil, python3-pyperclip, python3-defusedxml, python3-filelock
 Recommends: mat2, libimage-exiftool-perl, avahi-daemon, avahi-utils, bluez, gstreamer1.0-tools, gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, gstreamer1.0-pipewire, python3-qrcode, python3-xlib, nautilus-python, ydotool
-Homepage: https://github.com/Lennebraha38/pardus-paylasim
+Homepage: https://github.com/quantro11/pardus-paylasim
 Section: utils
 Priority: optional
 Description: Pardus Güvenli Paylaşım, Cihaz Tanıma ve Ekran Paylaşımı Merkezi
